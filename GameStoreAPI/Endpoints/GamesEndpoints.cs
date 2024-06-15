@@ -52,6 +52,7 @@ namespace GameStoreAPI.Endpoints
                 .WithName("GetGame"); //---> WithName le agrega un nombre para poder usar el endpoint desde dentro del servidor
 
 
+
             // POST /games
             // El cliente accede a este endpoint con un objeto de tipo CreateGameDto.
             // El cuerpo de la funcion lambda lo convierte en un Dto interno con ID.
@@ -72,6 +73,7 @@ namespace GameStoreAPI.Endpoints
                 return Results.CreatedAtRoute("GetGame", new { id = juego.Id }, juego);
             });
 
+
             // PUT /games/1
             group.MapPut("/{id}", (int id, UpdateGameDto updateJuego) =>
             {
@@ -91,7 +93,7 @@ namespace GameStoreAPI.Endpoints
                 return Results.NoContent(); //Por convencion se retorna NoContent
             });
 
-            // DELETE/1
+            // DELETE /games/1
             group.MapDelete("/{id}", (int id) =>
             {
                 var index = juegos.FindIndex(juego => juego.Id == id);
