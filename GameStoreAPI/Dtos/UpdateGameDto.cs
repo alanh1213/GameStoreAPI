@@ -6,8 +6,7 @@ namespace GameStoreAPI.Dtos
         
         [Required][StringLength(50)] //-->Son los famosos data annotations
         string Nombre,
-        [Required][StringLength(25)]
-        string Genero,
+        int GeneroId,
         decimal Precio,
         DateOnly FechaLanzamiento);
 

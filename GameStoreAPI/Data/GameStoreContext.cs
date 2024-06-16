@@ -17,6 +17,7 @@ namespace GameStoreAPI.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Este metodo se llama siempre cuando se ejecuta una migracion
+            //Es un seedeo hardcodeado para la BD
 
             modelBuilder.Entity<Genre>().HasData(
                 new {Id = 1, Nombre = "Fighting" },
