@@ -3,14 +3,14 @@ using GameStoreAPI.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connString = builder.Configuration.GetConnectionString("GameStore"); //El Configuration lee el appsettings
+var connString = builder.Configuration.GetConnectionString("GameStore"); //--> El Configuration lee el appsettings
 
 builder.Services.AddSqlite<GameStoreContext>(connString);
 
 var app = builder.Build();
 
-app.MapGamesEndpoints();
+app.MapGamesEndpoints();  //--> Endpoints
 
-app.MigrateDb();
+app.MigrateDb();  //--> Migra la BD cada vez que se ejecuta el server
 
 app.Run();

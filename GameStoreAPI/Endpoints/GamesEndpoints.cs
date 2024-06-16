@@ -1,4 +1,8 @@
-﻿using GameStoreAPI.Dtos;
+﻿using GameStoreAPI.Data;
+using GameStoreAPI.Dtos;
+using GameStoreAPI.Entidades;
+using GameStoreAPI.Mapping;
+using Microsoft.EntityFrameworkCore;
 
 namespace GameStoreAPI.Endpoints
 {
@@ -8,46 +12,28 @@ namespace GameStoreAPI.Endpoints
         // Se extiende la clase WebApplication con los metodos CRUD, de forma separada del Program.cs
         //*******************************************************************************************
 
-        private static readonly List<GameDto> juegos = [
-        new (
-            1,
-            "Street Fighter II",
-            "Peleas",
-            19.99M,
-            new DateOnly(1992, 7, 15)),
-        new (
-            2,
-            "Final Fantasy XIV",
-            "Juego de rol",
-            59.99M,
-            new DateOnly(2010, 9, 30)),
-        new (
-            3,
-            "FIFA 23",
-            "Deportes",
-            69.99M,
-            new DateOnly(2022, 9, 27)),
-
-        ];
-
-
         public static RouteGroupBuilder MapGamesEndpoints(this WebApplication app)
         {
             var group = app.MapGroup("juegos") //el group reemplaza al app en los endpoints y ya no hace falta
                                                //hardcodear "juegos" en cada uno de ellos.
                            .WithParameterValidation();  //---> Este filtro fuerza que se validen los anticuados Data Annotations
                                                         //Se puede poner en cada endpoint pero el group los agrega automaticamente
-                                                         
+
 
             // GET /games
-            group.MapGet("/", () => juegos);
+            group.MapGet("/", (GameStoreContext dbContext) =>
+            {
+                return dbContext.Juegos.Include(juego => juego.Genero) //--> Agrega la informacion de la tabla vinculada
+                                .Select(juego => juego.ToGameSummaryDto())
+                                .AsNoTracking(); //--> Esta ultima tarea optimiza la query ya que no vamos a operar con las entidades
+            });
 
             // GET /games/1
-            group.MapGet("/{id}", (int id) =>
+            group.MapGet("/{id}", (int id, GameStoreContext dbContext) =>
             {
-                var juego = juegos.Find(juego => juego.Id == id);
+                Game? juego = dbContext.Juegos.Find(id);
 
-                return juego is null ? Results.NotFound() : Results.Ok(juego); // Validacion en caso de que no exista el juego
+                return juego is null ? Results.NotFound() : Results.Ok(juego.ToGameDetailsDto()); // Validacion en caso de que no exista el juego
             })
                 .WithName("GetGame"); //---> WithName le agrega un nombre para poder usar el endpoint desde dentro del servidor
 
@@ -58,47 +44,36 @@ namespace GameStoreAPI.Endpoints
             // El cuerpo de la funcion lambda lo convierte en un Dto interno con ID.
             // Y luego agrega el juego a la lista
             // Finalmente devuelve al cliente el codigo 201, con el id en forma de tipo anonimo (por convencion) y el objeto dentro de la lista
-            group.MapPost("/", (CreateGameDto nuevoJuego) =>
+            group.MapPost("/", (CreateGameDto nuevoJuego, GameStoreContext dbContext) =>
             {
+                Game juego = nuevoJuego.ToEntity();
 
-                GameDto juego = new(
-                        juegos.Count + 1,
-                        nuevoJuego.Nombre,
-                        nuevoJuego.Genero,
-                        nuevoJuego.Precio,
-                        nuevoJuego.FechaLanzamiento
-                    );
+                dbContext.Juegos.Add(juego);
+                dbContext.SaveChanges();
 
-                juegos.Add(juego);
-                return Results.CreatedAtRoute("GetGame", new { id = juego.Id }, juego);
+                GameDetailsDto juegoDto = juego.ToGameDetailsDto();
+                return Results.CreatedAtRoute("GetGame", new { id = juego.Id}, juegoDto);
             });
 
 
             // PUT /games/1
-            group.MapPut("/{id}", (int id, UpdateGameDto updateJuego) =>
+            group.MapPut("/{id}", (int id, UpdateGameDto updateJuego, GameStoreContext dbContext) =>
             {
-                var index = juegos.FindIndex(game => game.Id == id);
+                var juegoExistente = dbContext.Juegos.Find(id);
+                if (juegoExistente is null) return Results.NotFound();  // --> Validacion (no esta el juego ID)
 
-                if (index == -1) return Results.NotFound();  // --> Validacion (no esta el juego ID)
-
-
-                juegos[index] = new GameDto(
-                        id,
-                        updateJuego.Nombre,
-                        updateJuego.Genero,
-                        updateJuego.Precio,
-                        updateJuego.FechaLanzamiento
-                    );
+                dbContext.Entry(juegoExistente).CurrentValues.SetValues(updateJuego.ToEntity(id));
+                dbContext.SaveChanges();
 
                 return Results.NoContent(); //Por convencion se retorna NoContent
             });
 
-            // DELETE /games/1
-            group.MapDelete("/{id}", (int id) =>
-            {
-                var index = juegos.FindIndex(juego => juego.Id == id);
 
-                juegos.RemoveAt(index);
+            // DELETE /games/1
+            group.MapDelete("/{id}", (int id, GameStoreContext dbContext) =>
+            {
+                dbContext.Juegos.Where(juego => juego.Id == id)
+                                .ExecuteDelete(); //--> Forma eficiente de borrar una registro
 
                 return Results.NoContent();
             });
