@@ -21,17 +21,18 @@ namespace GameStoreAPI.Endpoints
 
 
             // GET /games
-            group.MapGet("/", (GameStoreContext dbContext) =>
+            group.MapGet("/", async (GameStoreContext dbContext) =>
             {
-                return dbContext.Juegos.Include(juego => juego.Genero) //--> Agrega la informacion de la tabla vinculada
+                return await dbContext.Juegos.Include(juego => juego.Genero) //--> Agrega la informacion de la tabla vinculada
                                 .Select(juego => juego.ToGameSummaryDto())
-                                .AsNoTracking(); //--> Esta ultima tarea optimiza la query ya que no vamos a operar con las entidades
+                                .AsNoTracking() //--> Esta ultima tarea optimiza la query ya que no vamos a operar con las entidades
+                                .ToListAsync();
             });
 
             // GET /games/1
-            group.MapGet("/{id}", (int id, GameStoreContext dbContext) =>
+            group.MapGet("/{id}", async(int id, GameStoreContext dbContext) =>
             {
-                Game? juego = dbContext.Juegos.Find(id);
+                Game? juego = await dbContext.Juegos.FindAsync(id);
 
                 return juego is null ? Results.NotFound() : Results.Ok(juego.ToGameDetailsDto()); // Validacion en caso de que no exista el juego
             })
@@ -44,12 +45,12 @@ namespace GameStoreAPI.Endpoints
             // El cuerpo de la funcion lambda lo convierte en un Dto interno con ID.
             // Y luego agrega el juego a la lista
             // Finalmente devuelve al cliente el codigo 201, con el id en forma de tipo anonimo (por convencion) y el objeto dentro de la lista
-            group.MapPost("/", (CreateGameDto nuevoJuego, GameStoreContext dbContext) =>
+            group.MapPost("/", async(CreateGameDto nuevoJuego, GameStoreContext dbContext) =>
             {
                 Game juego = nuevoJuego.ToEntity();
 
                 dbContext.Juegos.Add(juego);
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync(); //-> El await esta aqui por que AddAsync no es un metodo que toque la BD
 
                 GameDetailsDto juegoDto = juego.ToGameDetailsDto();
                 return Results.CreatedAtRoute("GetGame", new { id = juego.Id}, juegoDto);
@@ -57,23 +58,23 @@ namespace GameStoreAPI.Endpoints
 
 
             // PUT /games/1
-            group.MapPut("/{id}", (int id, UpdateGameDto updateJuego, GameStoreContext dbContext) =>
+            group.MapPut("/{id}", async(int id, UpdateGameDto updateJuego, GameStoreContext dbContext) =>
             {
-                var juegoExistente = dbContext.Juegos.Find(id);
+                var juegoExistente = await dbContext.Juegos.FindAsync(id);
                 if (juegoExistente is null) return Results.NotFound();  // --> Validacion (no esta el juego ID)
 
                 dbContext.Entry(juegoExistente).CurrentValues.SetValues(updateJuego.ToEntity(id));
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
 
                 return Results.NoContent(); //Por convencion se retorna NoContent
             });
 
 
             // DELETE /games/1
-            group.MapDelete("/{id}", (int id, GameStoreContext dbContext) =>
+            group.MapDelete("/{id}", async (int id, GameStoreContext dbContext) =>
             {
-                dbContext.Juegos.Where(juego => juego.Id == id)
-                                .ExecuteDelete(); //--> Forma eficiente de borrar una registro
+                await dbContext.Juegos.Where(juego => juego.Id == id)
+                                .ExecuteDeleteAsync(); //--> Forma eficiente de borrar una registro
 
                 return Results.NoContent();
             });
