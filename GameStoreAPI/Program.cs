@@ -1,11 +1,13 @@
 using GameStoreAPI.Data;
 using GameStoreAPI.Endpoints;
+using GameStoreAPI.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var connString = builder.Configuration.GetConnectionString("GameStore"); //--> El Configuration lee el appsettings
 
 builder.Services.AddSqlite<GameStoreContext>(connString);
+builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 
 var app = builder.Build();
 
