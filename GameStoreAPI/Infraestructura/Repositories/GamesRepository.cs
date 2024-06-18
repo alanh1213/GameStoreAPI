@@ -1,10 +1,10 @@
-﻿using GameStoreAPI.Data;
-using GameStoreAPI.Dtos;
-using GameStoreAPI.Entidades;
-using GameStoreAPI.Mapping;
+﻿using GameStoreAPI.Aplicacion.Dtos;
+using GameStoreAPI.Dominio.Entidades;
+using GameStoreAPI.Infraestructura.Data;
+using GameStoreAPI.Infraestructura.Mapping;
 using Microsoft.EntityFrameworkCore;
 
-namespace GameStoreAPI.Repositories
+namespace GameStoreAPI.Infraestructura.Repositories
 {
     public class GamesRepository : IGamesRepository
     {

@@ -1,7 +1,7 @@
-﻿using GameStoreAPI.Dtos;
-using GameStoreAPI.Entidades;
+﻿using GameStoreAPI.Aplicacion.Dtos;
+using GameStoreAPI.Dominio.Entidades;
 
-namespace GameStoreAPI.Mapping
+namespace GameStoreAPI.Infraestructura.Mapping
 {
     public static class GenreMapping
     {

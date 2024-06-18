@@ -1,7 +1,7 @@
-﻿using GameStoreAPI.Entidades;
+﻿using GameStoreAPI.Dominio.Entidades;
 using Microsoft.EntityFrameworkCore;
 
-namespace GameStoreAPI.Data
+namespace GameStoreAPI.Infraestructura.Data
 {
     public class GameStoreContext : DbContext
     {
@@ -20,7 +20,7 @@ namespace GameStoreAPI.Data
             //Es un seedeo hardcodeado para la BD
 
             modelBuilder.Entity<Genre>().HasData(
-                new {Id = 1, Nombre = "Fighting" },
+                new { Id = 1, Nombre = "Fighting" },
                 new { Id = 2, Nombre = "Roleplaying" },
                 new { Id = 3, Nombre = "Sports" },
                 new { Id = 4, Nombre = "Racing" },

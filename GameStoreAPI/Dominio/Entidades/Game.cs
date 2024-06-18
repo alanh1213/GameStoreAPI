@@ -1,4 +1,4 @@
-﻿namespace GameStoreAPI.Entidades
+﻿namespace GameStoreAPI.Dominio.Entidades
 {
     public class Game
     {

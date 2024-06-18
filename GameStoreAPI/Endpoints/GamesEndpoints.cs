@@ -1,8 +1,8 @@
-﻿using GameStoreAPI.Data;
-using GameStoreAPI.Dtos;
-using GameStoreAPI.Entidades;
-using GameStoreAPI.Mapping;
-using GameStoreAPI.Repositories;
+﻿using GameStoreAPI.Aplicacion.Dtos;
+using GameStoreAPI.Dominio.Entidades;
+using GameStoreAPI.Infraestructura.Data;
+using GameStoreAPI.Infraestructura.Mapping;
+using GameStoreAPI.Infraestructura.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameStoreAPI.Endpoints

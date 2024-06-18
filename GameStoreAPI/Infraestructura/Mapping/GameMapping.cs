@@ -1,8 +1,8 @@
-﻿using GameStoreAPI.Dtos;
-using GameStoreAPI.Entidades;
+﻿using GameStoreAPI.Aplicacion.Dtos;
+using GameStoreAPI.Dominio.Entidades;
 using Microsoft.EntityFrameworkCore;
 
-namespace GameStoreAPI.Mapping
+namespace GameStoreAPI.Infraestructura.Mapping
 {
     public static class GameMapping
     {
